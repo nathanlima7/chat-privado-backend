@@ -6,14 +6,24 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
+const connectedUsers = {};
+
 io.on("connection", (socket) => {
   socket.on("join", (username) => {
-    socket.username = username;
+    connectedUsers[socket.id] = username;
     io.emit("user-joined", username);
   });
 
   socket.on("message", (data) => {
     io.emit("message", data);
+  });
+
+  socket.on("disconnect", () => {
+    const username = connectedUsers[socket.id];
+    if (username) {
+      io.emit("message", { username: "System", message: `${username} saiu do chat.` });
+      delete connectedUsers[socket.id];
+    }
   });
 });
 
