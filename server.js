@@ -14,9 +14,10 @@ io.on("connection", (socket) => {
     io.emit("user-joined", username);
   });
 
-  socket.on("message", (data) => {
-    io.emit("message", data);
-  });
+  socket.on("message", ({ username, message }) => {
+    // Envia a mensagem para todos os outros clientes, exceto o remetente
+    socket.broadcast.emit("message", { username, message });
+  });  
 
   socket.on("disconnect", () => {
     const username = connectedUsers[socket.id];
